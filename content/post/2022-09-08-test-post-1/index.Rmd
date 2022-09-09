@@ -10,14 +10,18 @@ tags: []
 Hello world!
 
 ```{r setup, include=FALSE}
-library(tidyverse)
+# Hiding all code output
 knitr::opts_chunk$set(echo = FALSE)
 
-data <- read_csv("house nationwide vote and seat share by party 1948-2020.csv")
+# Loading libraries
+library(tidyverse)
+
+# Reading in data
+house_vote_48_20 <- read_csv("house nationwide vote and seat share by party 1948-2020.csv")
 ```
 
 ```{r}
-data %>% 
+house_vote_48_20 %>% 
   ggplot(aes(x = year, y = D_seats)) +
   geom_line() +
   theme_classic()
