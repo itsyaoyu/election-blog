@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on My New Hugo Site</title>
-    <link>http://example.org/post/</link>
-    <description>Recent content in Posts on My New Hugo Site</description>
+    <title>Posts on Yao&#39;s Election Blog</title>
+    <link>https://itsyaoyu.github.io/election-blog/post/</link>
+    <description>Recent content in Posts on Yao&#39;s Election Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 08 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="http://example.org/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 08 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://itsyaoyu.github.io/election-blog/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Test Post 1</title>
-      <link>http://example.org/post/2022-09-08-test-post-1/</link>
+      <link>https://itsyaoyu.github.io/election-blog/post/2022-09-08-test-post-1/</link>
       <pubDate>Thu, 08 Sep 2022 00:00:00 +0000</pubDate>
       
-      <guid>http://example.org/post/2022-09-08-test-post-1/</guid>
+      <guid>https://itsyaoyu.github.io/election-blog/post/2022-09-08-test-post-1/</guid>
       <description>Hello world!</description>
     </item>
     
