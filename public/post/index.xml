@@ -13,8 +13,7 @@
       <pubDate>Thu, 08 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>http://example.org/post/2022-09-08-test-post-1/</guid>
-      <description>  Hello world!
-data %&amp;gt;% ggplot(aes(x = year, y = D_seats)) + geom_line() + theme_classic() </description>
+      <description>Hello world!</description>
     </item>
     
   </channel>
