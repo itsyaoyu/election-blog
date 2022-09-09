@@ -9,7 +9,7 @@ tags: []
 
 Hello world!
 
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 library(tidyverse)
 knitr::opts_chunk$set(echo = FALSE)
 
