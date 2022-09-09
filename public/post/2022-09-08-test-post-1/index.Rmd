@@ -8,3 +8,17 @@ tags: []
 ---
 
 Hello world!
+
+```{r, include=FALSE}
+library(tidyverse)
+
+data <- read_csv("house nationwide vote and seat share by party 1948-2020.csv")
+```
+
+```{r}
+data %>% 
+  ggplot(aes(x = year, y = D_seats)) +
+  geom_line() +
+  theme_classic()
+```
+
