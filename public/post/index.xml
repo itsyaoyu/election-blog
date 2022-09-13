@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Yao&#39;s Election Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 08 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://itsyaoyu.github.io/election-blog/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 12 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://itsyaoyu.github.io/election-blog/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>2022 Midterm Forecast Introduction</title>
+      <link>https://itsyaoyu.github.io/election-blog/post/2022-09-13-midterm-forecast-introduction/</link>
+      <pubDate>Mon, 12 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://itsyaoyu.github.io/election-blog/post/2022-09-13-midterm-forecast-introduction/</guid>
+      <description>From now until November 3, I will be updating this weekly blog series with my &lt;strong&gt;2022 US midterm election prediction model&lt;/strong&gt;. For this first blog, I&amp;rsquo;ll be exploring past election results to find any trends in the data. More specifically, I&amp;rsquo;ll be diving into the state of &lt;strong&gt;Pennsylvania&lt;/strong&gt; and identifying any potential &lt;strong&gt;swing districts&lt;/strong&gt;.</description>
+    </item>
+    
     <item>
       <title>Test Post 1</title>
       <link>https://itsyaoyu.github.io/election-blog/post/2022-09-08-test-post-1/</link>

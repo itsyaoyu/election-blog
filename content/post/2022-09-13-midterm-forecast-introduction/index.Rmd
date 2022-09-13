@@ -1,0 +1,130 @@
+---
+title: 2022 Midterm Forecast Introduction
+author: Yao Yu
+date: '2022-09-12'
+slug: []
+categories: []
+tags: []
+summary: "From now until November 3, I will be updating this weekly blog series with my **2022 US midterm election prediction model**. For this first blog, I'll be exploring past election results to find any trends in the data. More specifically, I'll be diving into the state of **Pennsylvania** and identifying any potential **swing districts**."
+---
+
+```{r setup, include=FALSE}
+# Hiding all code output
+knitr::opts_chunk$set(echo = FALSE)
+
+# Loading libraries
+library(tidyverse)
+library(sf)
+library(plotly)
+
+# Reading in data
+house_vote_seat_party <- read_csv("data/house nationwide vote and seat share by party 1948-2020.csv")
+house_vote_district <- read_csv("data/house party vote share by district 1948-2020.csv")
+```
+
+*This blog is part of a series related to Gov 1347: Election Analytics, a course at [Harvard University](https://www.harvard.edu/) taught by Professor [Ryan D. Enos](http://ryandenos.com/)*.
+
+<br>
+
+From now until November 3, I will be updating this weekly blog series with my **2022 US midterm election prediction model**. For this first blog, I'll be exploring past election results to find any trends in the data. More specifically, I'll be diving into the state of **Pennsylvania** and identifying any potential **swing districts**.
+
+<br>
+
+# Pennsylvania
+
+<br>
+
+Pennsylvania has been a critical swing state in recent American elections. From [flipping red](https://www.washingtonpost.com/news/the-fix/wp/2016/11/15/the-counties-that-flipped-parties-to-swing-the-2016-election/) in 2016 to flipping [back blue](https://www.politico.com/news/2020/11/07/how-pennsylvania-was-won-434974) in 2020 to becoming a [legal tension](https://www.politico.com/news/2022/01/13/pa-redistricting-527087) in the latest redistricting process, let's just say that PA is one to keep an eye on. But, how is the state relevant in midterm elections? Below, I map out the GOP seat share in Pennsylvania from the 2014 midterm election for the House of Representatives.
+
+```{r visualization, warning=FALSE}
+# load 114th congress
+cd114 <- st_read("districtShapes/districts114.shp", quiet = TRUE)
+
+# select specific state 
+cd114_pa <- cd114 %>% 
+            filter(STATENAME %in% c("Pennsylvania")) %>%
+            mutate(DISTRICT = as.character(DISTRICT))%>%
+            select(DISTRICT)
+
+# add data to plot - 2014 GOP party seat share
+# reload election data - h from previous exercise
+h <- house_vote_district
+
+# filter for 2014 election and state
+R_pa_2014 <- h %>%
+    filter(raceYear == 2014, State %in% c("Pennsylvania")) %>%
+    select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %>%
+  # summarize party vote share by district
+    group_by(district_num) %>%
+    summarise(Rep_votes_pct = RepVotesMajorPercent) %>%
+  # rename district variable name to match shapefile
+    rename(DISTRICT = district_num)
+
+# change class
+cd114_pa$DISTRICT <- as.numeric(cd114_pa$DISTRICT)
+
+# join election returns with shapefiles
+cd114_pa <- cd114_pa %>% left_join(R_pa_2014, by="DISTRICT")
+
+# time to map!
+pa <- ggplot() + 
+  geom_sf(data=cd114_pa,aes(fill=Rep_votes_pct),
+          inherit.aes=FALSE,alpha=0.9) + 
+  scale_fill_binned(low = "blue", high = "red", 
+                    breaks=c(40, 45, 50, 55, 60)) +
+  theme_void() +
+  labs(title = "2014 GOP Party Seat Share - PA",
+       fill = "R-Vote %")
+
+ggplotly(pa) %>% 
+  layout(xaxis = list(showline = FALSE),
+         yaxis = list(showline = FALSE))
+```
+
+At first glance, it may appear that the state votes very Republican! However, this can be deceiving because most of the population is clustered around large cities like Philadelphia and Pittsburgh. After the latest round of [redistricting](https://projects.fivethirtyeight.com/redistricting-2022-maps/pennsylvania/updated_preliminary_plan/), Democrats have the opportunity to win a majority of seats although at a hefty [price](https://www.spotlightpa.org/news/2022/09/pa-redistricting-political-maps-law-firm-legal-bill-costs/). In FiveThirtyEight's most recent midterm [forecast](https://projects.fivethirtyeight.com/2022-election-forecast/house/?cid=rrpromo), they have Republicans leading in 8 districts, Democrats leading in 8 other districts, and 1 toss-up district. Since the last redistricting cycle, Pennsylvania has lost a seat in the House. So, it will be particularly interesting to follow what happens to Pennsylvania's 7th District (the toss-up).
+
+<br>
+
+# Swing Districts?
+
+<br>
+
+This week, I also explored the potential for any swing districts in the state during the last decade. However, from my analysis of House elections from 2012-2020, I found that the majority of seats remained stable with minimal change. The occasions of spikes in "swing values", for example in 2014, are actually reflective of candidates running unopposed!
+
+```{r swing districts, warning=FALSE, message=FALSE}
+# filter for 2010s election and state
+R_pa_2010s <- h %>%
+    filter(raceYear >= 2012, raceYear <= 2020, State %in% c("Pennsylvania")) %>%
+    select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %>%
+# Calculating values for the swing map and then removing 2012 (different map before?)
+  rename(
+    "R" = "RepVotesMajorPercent",
+    "D" = "DemVotesMajorPercent",
+    "DISTRICT" = "district_num"
+  ) %>% 
+  arrange(DISTRICT, raceYear) %>% 
+  mutate(swing = round(case_when(
+    DISTRICT == lag(DISTRICT) ~ (R/(D+R))-(lag(R)/(lag(D)+lag(R))),
+    TRUE ~ -1
+  ), digits = 2)) %>% 
+  filter(raceYear != 2012)
+
+# join election returns with shapefiles
+R_pa_2010s_cd <- cd114_pa %>% left_join(R_pa_2010s, by="DISTRICT")
+
+# Function for supressing plotly messages
+# https://github.com/plotly/plotly.R/issues/1202
+suppressPlotlyMessage <- function(p) {
+  suppressMessages(plotly_build(p))
+}
+
+# Plotting
+swing_map <- suppressPlotlyMessage(plot_ly(R_pa_2010s_cd, split = ~swing, locations = ~DISTRICT,
+            color = ~swing, colors = 'Purples', frame = ~raceYear)) %>% 
+  colorbar(title = 'Swing') %>% 
+  layout(title = 'PA Swing Districts 1972-2016')
+
+swing_map
+```
+
+This shows the power of the incumbency effect, but what happens when the district lines are redrawn? This upcoming midterm election will put this to the test. One question to explore further may be how incumbents fare after district lines are heavily changed (due to the loss or gain of a seat(s)). It may be interesting to explore this further down the line and evaluate how the demographics of incumbents' districts have shifted either towards or away from their favor.

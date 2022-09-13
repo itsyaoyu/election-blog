@@ -1,0 +1,102 @@
+---
+title: 2022 Midterm Forecast Introduction
+author: Yao Yu
+date: '2022-09-12'
+slug: []
+categories: []
+tags: []
+---
+
+```{r setup, include=FALSE}
+# Hiding all code output
+knitr::opts_chunk$set(echo = FALSE)
+
+# Loading libraries
+library(tidyverse)
+library(sf)
+library(plotly)
+
+# Reading in data
+house_vote_seat_party <- read_csv("data/house nationwide vote and seat share by party 1948-2020.csv")
+house_vote_district <- read_csv("data/house party vote share by district 1948-2020.csv")
+```
+
+```{r visualization, warning=FALSE}
+# load 114th congress
+cd114 <- st_read("districtShapes/districts114.shp")
+
+# select specific state 
+cd114_pa <- cd114 %>% 
+            filter(STATENAME %in% c("Pennsylvania")) %>%
+            mutate(DISTRICT = as.character(DISTRICT))%>%
+            select(DISTRICT)
+
+# add data to plot - 2014 GOP party seat share
+# reload election data - h from previous exercise
+h <- house_vote_district
+
+# filter for 2014 election and state
+R_pa_2014 <- h %>%
+    filter(raceYear == 2014, State %in% c("Pennsylvania")) %>%
+    select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %>%
+  # summarize party vote share by district
+    group_by(district_num) %>%
+    summarise(Rep_votes_pct = RepVotesMajorPercent) %>%
+  # rename district variable name to match shapefile
+    rename(DISTRICT = district_num)
+
+# before joining dfs, check classes of variable to be merged on
+class(R_pa_2014$DISTRICT)
+class(cd114_pa$DISTRICT)
+
+# change class
+cd114_pa$DISTRICT <- as.numeric(cd114_pa$DISTRICT)
+
+# join election returns with shapefiles
+cd114_pa <- cd114_pa %>% left_join(R_pa_2014, by="DISTRICT")
+
+# time to map!
+pa <- ggplot() + 
+  geom_sf(data=cd114_pa,aes(fill=Rep_votes_pct),
+          inherit.aes=FALSE,alpha=0.9) + 
+  scale_fill_binned(low = "blue", high = "red", 
+                    breaks=c(40, 45, 50, 55, 60)) +
+  theme_void() +
+  labs(title = "2014 GOP Party Seat Share - PA",
+       fill = "R-Vote %")
+
+ggplotly(pa) %>% 
+  layout(xaxis = list(showline = FALSE),
+         yaxis = list(showline = FALSE))
+```
+
+```{r swing districts, warning=FALSE}
+# filter for 2010s election and state
+R_pa_2010s <- h %>%
+    filter(raceYear >= 2012, raceYear <= 2020, State %in% c("Pennsylvania")) %>%
+    select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %>%
+# Calculating values for the swing map and then removing 2012 (different map before?)
+  rename(
+    "R" = "RepVotesMajorPercent",
+    "D" = "DemVotesMajorPercent",
+    "DISTRICT" = "district_num"
+  ) %>% 
+  arrange(DISTRICT, raceYear) %>% 
+  mutate(swing = round(case_when(
+    DISTRICT == lag(DISTRICT) ~ (R/(D+R))-(lag(R)/(lag(D)+lag(R))),
+    TRUE ~ -1
+  ), digits = 2)) %>% 
+  filter(raceYear != 2012)
+
+# join election returns with shapefiles
+R_pa_2010s_cd <- cd114_pa %>% left_join(R_pa_2010s, by="DISTRICT")
+
+# Plotting
+swing_map <- plot_ly(R_pa_2010s_cd, split = ~swing, locations = ~DISTRICT,
+            color = ~swing, colors = 'Purples', frame = ~raceYear) %>% 
+  colorbar(title = 'Swing') %>% 
+  layout(title = 'PA Swing Districts 1972-2016')
+
+swing_map
+```
+
